@@ -963,12 +963,15 @@ version = "0.1.0"
 dependencies = [
  "image",
  "image_hasher",
+ "rayon",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",
  "tauri-plugin-opener",
+ "thiserror 2.0.11",
+ "time",
  "walkdir",
 ]
 
