@@ -47,8 +47,10 @@ async fn open_files(app: AppHandle) -> Result<Vec<PotentialDuplicate>, crate::er
         files.par_iter().for_each(|file| {
             match hash_file(app.clone(), file.as_path()) {
                 Ok(hash) => {
-                    let mut files = files_with_hash.lock().unwrap();
-                    files.insert(file.to_string_lossy().to_string(), hash);
+                    files_with_hash
+                        .lock()
+                        .unwrap()
+                        .insert(file.to_string_lossy().to_string(), hash);
                 }
                 Err(e) => eprintln!("Failed to hash file: {:?}", e),
             };
@@ -86,6 +88,7 @@ fn compare_hashes(
                     "Potential duplicates found: {} and {} (Hamming Distance: {})",
                     filename1, filename2, distance
                 );
+                //TODO Add filesize and resolution
                 duplicates.push((filename1.to_string(), filename2.to_string(), distance));
             }
         }
