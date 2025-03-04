@@ -72,7 +72,9 @@ async fn open_files(app: AppHandle) -> Result<Vec<PotentialDuplicate>, crate::er
                 Err(e) => eprintln!("Failed to hash file: {:?}", e),
             };
         });
+        app.emit("comparing-started", "").unwrap();
         let duplicates = compare_hashes(&files_with_hash.lock().unwrap());
+        app.emit("comparing-finished", "").unwrap();
         println!("{}", time::OffsetDateTime::now_utc() - start);
         Ok(duplicates)
     } else {

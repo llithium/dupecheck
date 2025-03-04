@@ -12,6 +12,7 @@
   import prettyBytes from "pretty-bytes";
 
   let loading = $state(false);
+  let loadingMessage = $state("Hashing...");
   let totalFiles: number | null = $state(null);
   let hashedFiles = $state(0);
   let duplicates: PotentialDuplicate[] = $state(mockDuplicates);
@@ -27,6 +28,7 @@
     totalFiles = 0;
     hashedFiles = 0;
     loading = true;
+    loadingMessage = "Hashing...";
   });
   const totalFilesUnlisten = listen<number>("total-files", (event) => {
     totalFiles = event.payload;
@@ -34,11 +36,18 @@
   const hashedFilesUnlisten = listen<number>("hashed-file", (event) => {
     hashedFiles += event.payload;
   });
-
+  const comparingStartedUnlisten = listen("comparing-started", () => {
+    loadingMessage = "Comparing...";
+  });
+  const comparingFinishedUnlisten = listen("comparing-finished", () => {
+    //TODO
+  });
   onDestroy(() => {
     hashingStartedUnlisten.then((f) => f());
     totalFilesUnlisten.then((f) => f());
     hashedFilesUnlisten.then((f) => f());
+    comparingStartedUnlisten.then((f) => f());
+    comparingFinishedUnlisten.then((f) => f());
   });
 </script>
 
@@ -47,9 +56,11 @@
     <Button disabled={loading} onclick={openFiles} variant="outline">
       {#if loading}
         <LoaderCircle class="animate-spin" />
+        {loadingMessage}
+      {:else}
+        Open Folders
       {/if}
-      Open Folders</Button
-    >
+    </Button>
   </div>
   {#if loading}
     <Progress value={hashedFiles} max={totalFiles || 100} />
