@@ -1,6 +1,5 @@
 <script lang="ts">
   import Button from "$lib/components/ui/button/button.svelte";
-  import { mockDuplicates } from "$lib/mock-duplicates";
   import type { PotentialDuplicate } from "$lib/types";
   import { invoke } from "@tauri-apps/api/core";
   import { convertFileSrc } from "@tauri-apps/api/core";
@@ -12,15 +11,19 @@
   import { openPath } from "@tauri-apps/plugin-opener";
   import ImageButtons from "$lib/components/image-buttons.svelte";
   import ImageDetailsTable from "$lib/components/image-details-table.svelte";
+  import { type CarouselAPI } from "$lib/components/ui/carousel/context.js";
 
   let loading = $state(false);
   let loadingMessage = $state("Hashing...");
   let totalFiles: number | null = $state(null);
   let currentFiles = $state(0);
-  let duplicates: PotentialDuplicate[] = $state(mockDuplicates);
+  let duplicates: PotentialDuplicate[] = $state([]);
+
+  let carouselAPI = $state<CarouselAPI>();
 
   async function openFiles() {
     duplicates = await invoke("open_files");
+    carouselAPI?.scrollTo(0);
     loading = false;
   }
   async function deleteFile(event: SubmitEvent) {
@@ -87,6 +90,7 @@
   {/if}
   {#if duplicates.length > 0}
     <Carousel.Root
+      setApi={(emblaApi) => (carouselAPI = emblaApi)}
       class={`mx-auto w-11/12 ${loading && "opacity-60 pointer-events-none"}`}
     >
       <Carousel.Content>
