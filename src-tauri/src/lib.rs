@@ -103,7 +103,7 @@ fn compare_hashes(
 
             let distance = hash1.dist(hash2);
 
-            if distance <= 4 {
+            if distance <= 9 {
                 let pathuf1 = PathBuf::from(file_path1);
                 let pathbuf2 = PathBuf::from(file_path2);
 
@@ -161,6 +161,7 @@ pub fn run() {
             app.manage(AppData {
                 hasher: HasherConfig::new()
                     .hash_alg(image_hasher::HashAlg::DoubleGradient)
+                    .hash_size(12, 12)
                     .to_hasher(),
             });
             Ok(())
