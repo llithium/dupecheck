@@ -11,6 +11,7 @@
   import { Progress } from "$lib/components/ui/progress";
   import prettyBytes from "pretty-bytes";
   import * as Table from "$lib/components/ui/table/index.js";
+  import { openPath, revealItemInDir } from "@tauri-apps/plugin-opener";
 
   let loading = $state(false);
   let loadingMessage = $state("Hashing...");
@@ -99,15 +100,21 @@
                 <div class="font-semibold text-sm pb-1">
                   {duplicate.filename1}
                 </div>
-                <img
-                  class="w-full max-h-[calc(100vh-150px)] object-contain"
-                  src={convertFileSrc(duplicate.file_path1)}
-                  alt=""
-                  srcset=""
-                />
-
+                <button onclick={() => openPath(duplicate.file_path1)}>
+                  <img
+                    class="w-full max-h-[calc(100vh-150px)] object-contain"
+                    src={convertFileSrc(duplicate.file_path1)}
+                    alt=""
+                    srcset=""
+                  />
+                </button>
                 <Table.Root>
-                  <Table.Caption>{duplicate.file_path1}</Table.Caption>
+                  <Table.Caption>
+                    <button
+                      onclick={() => revealItemInDir(duplicate.file_path1)}
+                      >{duplicate.file_path1}</button
+                    ></Table.Caption
+                  >
                   <Table.Header>
                     <Table.Row>
                       <Table.Head class="w-[100px]">Details</Table.Head>
@@ -137,20 +144,26 @@
                 </Table.Root>
 
                 <!--  TODO Add delete button -->
-                <!-- TODO Add show in file browser button -->
               </div>
               <div class="flex flex-col basis-1/2">
                 <div class="font-semibold text-sm pb-1 text-end">
                   {duplicate.filename2}
                 </div>
-                <img
-                  class="w-full max-h-[calc(100vh-150px)] object-contain"
-                  src={convertFileSrc(duplicate.file_path2)}
-                  alt=""
-                  srcset=""
-                />
+                <button onclick={() => openPath(duplicate.file_path2)}>
+                  <img
+                    class="w-full max-h-[calc(100vh-150px)] object-contain"
+                    src={convertFileSrc(duplicate.file_path2)}
+                    alt=""
+                    srcset=""
+                  />
+                </button>
                 <Table.Root>
-                  <Table.Caption>{duplicate.file_path2}</Table.Caption>
+                  <Table.Caption>
+                    <button
+                      onclick={() => revealItemInDir(duplicate.file_path2)}
+                      >{duplicate.file_path2}</button
+                    >
+                  </Table.Caption>
                   <Table.Header>
                     <Table.Row>
                       <Table.Head class="w-[100px]">Details</Table.Head>

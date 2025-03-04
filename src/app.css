@@ -78,4 +78,5 @@
 }
 html {
   scrollbar-color: hsl(var(--border)) rgba(0, 0, 0, 0);
+  user-select: none;
 }
