@@ -8,8 +8,11 @@
   import LoaderCircle from "lucide-svelte/icons/loader-circle";
   import { listen } from "@tauri-apps/api/event";
   import { onDestroy } from "svelte";
+  import { Progress } from "$lib/components/ui/progress";
 
   let loading = $state(false);
+  let totalFiles = $state(0);
+  let hashedFiles = $state(0);
   let duplicates: PotentialDuplicate[] = $state(mockDuplicates);
 
   async function openFiles() {
@@ -20,11 +23,21 @@
   }
 
   const hashingStartedUnlisten = listen("hashing-started", () => {
+    totalFiles = 0;
+    hashedFiles = 0;
     loading = true;
+  });
+  const totalFilesUnlisten = listen<number>("total-files", (event) => {
+    totalFiles = event.payload;
+  });
+  const hashedFilesUnlisten = listen<number>("hashed-file", (event) => {
+    hashedFiles += event.payload;
   });
 
   onDestroy(() => {
     hashingStartedUnlisten.then((f) => f());
+    totalFilesUnlisten.then((f) => f());
+    hashedFilesUnlisten.then((f) => f());
   });
 </script>
 
@@ -37,6 +50,9 @@
       Open Folders</Button
     >
   </div>
+  {#if loading}
+    <Progress value={hashedFiles} max={totalFiles} />
+  {/if}
   <Carousel.Root class="mx-auto w-10/12">
     <Carousel.Content>
       {#each duplicates as duplicate}
@@ -70,27 +86,4 @@
     <Carousel.Previous />
     <Carousel.Next />
   </Carousel.Root>
-  {#each duplicates as duplicate}
-    <!-- <div class="flex flex-col">
-      <div class="flex">
-        <img
-          class="max-h-44 max-w-44"
-          src={convertFileSrc(duplicate[0])}
-          alt=""
-          srcset=""
-        />
-        <span>{duplicate[0]}</span>
-      </div>
-      <div class="flex">
-        <img
-          class="max-h-44 max-w-44"
-          src={convertFileSrc(duplicate[1])}
-          alt=""
-          srcset=""
-        />
-        <span>{duplicate[1]}</span>
-      </div>
-      <span>Distance: {duplicate[2]}</span>
-    </div> -->
-  {/each}
 </main>

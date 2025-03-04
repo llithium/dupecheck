@@ -27,24 +27,23 @@ fn greet(name: &str) -> String {
 async fn open_files(app: AppHandle) -> Result<Vec<PotentialDuplicate>, crate::error::Error> {
     let folders = app.dialog().file().blocking_pick_folders();
     let start = time::OffsetDateTime::now_utc();
-    app.emit("hashing-started", "").unwrap();
     if let Some(paths) = folders {
+        app.emit("hashing-started", "").unwrap();
         let files_with_hash = Arc::new(Mutex::new(HashMap::new()));
-        // let mut file_count = 0;
+        let mut file_count = 0;
         let mut files = Vec::new();
         for path in paths {
             let path = path.into_path().expect("Convert FilePath into PathBuf");
-
             for entry in WalkDir::new(&path).into_iter().filter_map(|e| e.ok()) {
-                // file_count += WalkDir::new(&path).into_iter().count();
-
                 if let Some(ext) = entry.path().extension() {
                     if EXTENSIONS.contains(&ext.to_str().unwrap_or("")) {
                         files.push(entry.path().to_path_buf());
+                        file_count += 1;
                     }
                 }
             }
         }
+        app.emit("total-files", file_count).unwrap();
         files.par_iter().for_each(|file| {
             match hash_file(app.clone(), file.as_path()) {
                 Ok(hash) => {
@@ -52,6 +51,7 @@ async fn open_files(app: AppHandle) -> Result<Vec<PotentialDuplicate>, crate::er
                         .lock()
                         .unwrap()
                         .insert(file.to_string_lossy().to_string(), hash);
+                    app.emit("hashed-file", 1).unwrap();
                 }
                 Err(e) => eprintln!("Failed to hash file: {:?}", e),
             };
