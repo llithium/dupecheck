@@ -19,7 +19,6 @@
   let duplicates: PotentialDuplicate[] = $state(mockDuplicates);
 
   async function openFiles() {
-    // loading = true;
     // duplicates =
     console.log(await invoke("open_files"));
     loading = false;
@@ -53,116 +52,139 @@
 </script>
 
 <main class="container pb-4">
-  <div class="w-full flex justify-center py-4">
-    <Button disabled={loading} onclick={openFiles} variant="outline">
-      {#if loading}
-        <LoaderCircle class="animate-spin" />
-        {loadingMessage}
-      {:else}
-        Open Folders
+  <div class="w-full flex justify-start py-4 items-center">
+    <div class="basis-1/3">
+      {#if duplicates.length > 0}
+        <span class="text-sm font-medium leading-none">
+          Potential Duplicates: {duplicates.length}
+        </span>
       {/if}
-    </Button>
+    </div>
+    <div class="basis-1/3 flex justify-center">
+      <Button disabled={loading} onclick={openFiles} variant="outline">
+        {#if loading}
+          <LoaderCircle class="animate-spin" />
+          {loadingMessage}
+        {:else}
+          Open Folders
+        {/if}
+      </Button>
+    </div>
+    <div class="basis-1/3"></div>
   </div>
-  {#if loading}
+  {#if loading && hashedFiles != totalFiles}
     <Progress value={hashedFiles} max={totalFiles || 100} />
   {/if}
-  <Carousel.Root class="mx-auto w-11/12">
-    <Carousel.Content>
-      {#each duplicates as duplicate}
-        <Carousel.Item>
-          <div class="font-semibold text-sm text-center">
-            Distance: {duplicate.distance}
-          </div>
-          <div class="flex gap-2">
-            <div class="flex flex-col basis-1/2">
-              <div class="font-semibold text-sm pb-1">
-                {duplicate.filename1}
+  {#if duplicates.length > 0}
+    <Carousel.Root class="mx-auto w-11/12">
+      <Carousel.Content>
+        {#each duplicates as duplicate, i}
+          <Carousel.Item>
+            <div class="w-full flex justify-start items-center pb-2">
+              <div class="basis-1/3">
+                <span class="text-muted-foreground text-sm">
+                  {i + 1}/{duplicates.length}
+                </span>
               </div>
-              <img
-                class="w-full max-h-[calc(100vh-150px)] object-contain"
-                src={convertFileSrc(duplicate.file_path1)}
-                alt=""
-                srcset=""
-              />
-
-              <Table.Root>
-                <Table.Caption>{duplicate.file_path1}</Table.Caption>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.Head class="w-[100px]">Details</Table.Head>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                  <Table.Row>
-                    <Table.Cell class="font-medium">Size</Table.Cell>
-                    <Table.Cell class="text-end"
-                      >{prettyBytes(duplicate.size1)}</Table.Cell
-                    >
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell class="font-medium">Resolution</Table.Cell>
-                    <Table.Cell class="text-end"
-                      >{duplicate.resolution1[0]} x {duplicate
-                        .resolution1[1]}</Table.Cell
-                    >
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell class="font-medium">Format</Table.Cell>
-                    <Table.Cell class="text-end"
-                      >{duplicate.format1.toLocaleUpperCase()}</Table.Cell
-                    >
-                  </Table.Row>
-                </Table.Body>
-              </Table.Root>
-
-              <!--  TODO Add delete button -->
-              <!-- TODO Add show in file browser button -->
-            </div>
-            <div class="flex flex-col basis-1/2">
-              <div class="font-semibold text-sm pb-1 text-end">
-                {duplicate.filename2}
+              <div class="basis-1/3 flex justify-center">
+                <div class="font-semibold text-sm text-center">
+                  Distance: {duplicate.distance}
+                </div>
               </div>
-              <img
-                class="w-full max-h-[calc(100vh-150px)] object-contain"
-                src={convertFileSrc(duplicate.file_path2)}
-                alt=""
-                srcset=""
-              />
-              <Table.Root>
-                <Table.Caption>{duplicate.file_path2}</Table.Caption>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.Head class="w-[100px]">Details</Table.Head>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                  <Table.Row>
-                    <Table.Cell class="font-medium">Size</Table.Cell>
-                    <Table.Cell class="text-end"
-                      >{prettyBytes(duplicate.size2)}</Table.Cell
-                    >
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell class="font-medium">Resolution</Table.Cell>
-                    <Table.Cell class="text-end"
-                      >{duplicate.resolution2[0]} x {duplicate
-                        .resolution2[1]}</Table.Cell
-                    >
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell class="font-medium">Format</Table.Cell>
-                    <Table.Cell class="text-end"
-                      >{duplicate.format2.toLocaleUpperCase()}</Table.Cell
-                    >
-                  </Table.Row>
-                </Table.Body>
-              </Table.Root>
+              <div class="basis-1/3"></div>
             </div>
-          </div>
-        </Carousel.Item>
-      {/each}
-    </Carousel.Content>
-    <Carousel.Previous />
-    <Carousel.Next />
-  </Carousel.Root>
+
+            <div class="flex gap-2">
+              <div class="flex flex-col basis-1/2">
+                <div class="font-semibold text-sm pb-1">
+                  {duplicate.filename1}
+                </div>
+                <img
+                  class="w-full max-h-[calc(100vh-150px)] object-contain"
+                  src={convertFileSrc(duplicate.file_path1)}
+                  alt=""
+                  srcset=""
+                />
+
+                <Table.Root>
+                  <Table.Caption>{duplicate.file_path1}</Table.Caption>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.Head class="w-[100px]">Details</Table.Head>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    <Table.Row>
+                      <Table.Cell class="font-medium">Size</Table.Cell>
+                      <Table.Cell class="text-end"
+                        >{prettyBytes(duplicate.size1)}</Table.Cell
+                      >
+                    </Table.Row>
+                    <Table.Row>
+                      <Table.Cell class="font-medium">Resolution</Table.Cell>
+                      <Table.Cell class="text-end"
+                        >{duplicate.resolution1[0]} x {duplicate
+                          .resolution1[1]}</Table.Cell
+                      >
+                    </Table.Row>
+                    <Table.Row>
+                      <Table.Cell class="font-medium">Format</Table.Cell>
+                      <Table.Cell class="text-end"
+                        >{duplicate.format1.toLocaleUpperCase()}</Table.Cell
+                      >
+                    </Table.Row>
+                  </Table.Body>
+                </Table.Root>
+
+                <!--  TODO Add delete button -->
+                <!-- TODO Add show in file browser button -->
+              </div>
+              <div class="flex flex-col basis-1/2">
+                <div class="font-semibold text-sm pb-1 text-end">
+                  {duplicate.filename2}
+                </div>
+                <img
+                  class="w-full max-h-[calc(100vh-150px)] object-contain"
+                  src={convertFileSrc(duplicate.file_path2)}
+                  alt=""
+                  srcset=""
+                />
+                <Table.Root>
+                  <Table.Caption>{duplicate.file_path2}</Table.Caption>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.Head class="w-[100px]">Details</Table.Head>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    <Table.Row>
+                      <Table.Cell class="font-medium">Size</Table.Cell>
+                      <Table.Cell class="text-end"
+                        >{prettyBytes(duplicate.size2)}</Table.Cell
+                      >
+                    </Table.Row>
+                    <Table.Row>
+                      <Table.Cell class="font-medium">Resolution</Table.Cell>
+                      <Table.Cell class="text-end"
+                        >{duplicate.resolution2[0]} x {duplicate
+                          .resolution2[1]}</Table.Cell
+                      >
+                    </Table.Row>
+                    <Table.Row>
+                      <Table.Cell class="font-medium">Format</Table.Cell>
+                      <Table.Cell class="text-end"
+                        >{duplicate.format2.toLocaleUpperCase()}</Table.Cell
+                      >
+                    </Table.Row>
+                  </Table.Body>
+                </Table.Root>
+              </div>
+            </div>
+          </Carousel.Item>
+        {/each}
+      </Carousel.Content>
+      <Carousel.Previous />
+      <Carousel.Next />
+    </Carousel.Root>
+  {/if}
 </main>
