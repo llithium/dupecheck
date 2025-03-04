@@ -97,7 +97,7 @@
 
             <div class="flex gap-2">
               <div class="flex flex-col basis-1/2">
-                <div class="font-semibold text-sm pb-1">
+                <div class="font-semibold text-center text-sm pb-1">
                   {duplicate.filename1}
                 </div>
                 <button onclick={() => openPath(duplicate.file_path1)}>
@@ -146,7 +146,7 @@
                 <!--  TODO Add delete button -->
               </div>
               <div class="flex flex-col basis-1/2">
-                <div class="font-semibold text-sm pb-1 text-end">
+                <div class="font-semibold text-center text-sm pb-1">
                   {duplicate.filename2}
                 </div>
                 <button onclick={() => openPath(duplicate.file_path2)}>
