@@ -23,7 +23,19 @@
     duplicates = await invoke("open_files");
     loading = false;
   }
+  async function deleteFile(event: SubmitEvent) {
+    event.preventDefault();
+    const formData = new FormData(event.target as HTMLFormElement);
+    const index = formData.get("index") as unknown as number;
+    const path = formData.get("path") as string;
 
+    try {
+      await invoke("delete_file", { path: path });
+      console.log("Working");
+
+      duplicates.splice(index, 1);
+    } catch (error) {}
+  }
   const hashingStartedUnlisten = listen("hashing-started", () => {
     totalFiles = 0;
     currentFiles = 0;
@@ -108,7 +120,11 @@
                     srcset=""
                   />
                 </button>
-                <ImageButtons filepath={duplicate.file_path1} />
+                <ImageButtons
+                  {deleteFile}
+                  index={i}
+                  filepath={duplicate.file_path1}
+                />
                 <ImageDetailsTable
                   filePath={duplicate.file_path1}
                   size={duplicate.size1}
@@ -129,7 +145,11 @@
                     srcset=""
                   />
                 </button>
-                <ImageButtons filepath={duplicate.file_path2} />
+                <ImageButtons
+                  {deleteFile}
+                  index={i}
+                  filepath={duplicate.file_path2}
+                />
                 <ImageDetailsTable
                   filePath={duplicate.file_path2}
                   size={duplicate.size2}

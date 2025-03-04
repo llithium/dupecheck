@@ -4,11 +4,14 @@
   } from "$lib/components/ui/button/button.svelte";
   import { openPath, revealItemInDir } from "@tauri-apps/plugin-opener";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import { invoke } from "@tauri-apps/api/core";
   interface Props {
     filepath: string;
+    deleteFile: (event: SubmitEvent) => void;
+    index: number;
   }
 
-  let { filepath }: Props = $props();
+  let { filepath, deleteFile, index }: Props = $props();
 </script>
 
 <div class="w-full flex gap-2 pt-1">
@@ -26,7 +29,6 @@
   >
   <Dialog.Root>
     <Dialog.Trigger
-      disabled
       class={buttonVariants({
         variant: "destructive",
         class: "basis-1/3",
@@ -36,15 +38,20 @@
       Delete
     </Dialog.Trigger>
     <Dialog.Content>
-      <Dialog.Header>
+      <Dialog.Header class="select-none">
         <Dialog.Title>Are you sure?</Dialog.Title>
         <Dialog.Description>
           This action cannot be undone. The file <strong>{filepath}</strong> will
           be permanently deleted from your device.
         </Dialog.Description>
       </Dialog.Header>
-      <Dialog.Footer>
-        <Button variant="destructive" type="submit">Delete</Button>
+      <Dialog.Footer class="select-none">
+        <form onsubmit={deleteFile}>
+          <input type="hidden" name="index" value={index} />
+          <input type="hidden" name="path" value={filepath} />
+
+          <Button variant="destructive" type="submit">Delete</Button>
+        </form>
       </Dialog.Footer>
     </Dialog.Content>
   </Dialog.Root>

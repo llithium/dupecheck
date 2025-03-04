@@ -35,11 +35,6 @@ struct PotentialDuplicate {
 const EXTENSIONS: [&str; 4] = ["jpg", "jpeg", "png", "webp"];
 
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
-#[tauri::command]
 async fn open_files(app: AppHandle) -> Result<Vec<PotentialDuplicate>, crate::error::Error> {
     let folders = app.dialog().file().blocking_pick_folders();
     let start = time::OffsetDateTime::now_utc();
@@ -134,6 +129,12 @@ fn compare_hashes(
     duplicates
 }
 
+#[tauri::command]
+fn delete_file(path: &str) -> Result<(), crate::error::Error> {
+    std::fs::remove_file(path)?;
+    Ok(())
+}
+
 fn get_file_info(file_path: &Path) -> (String, u64, (u32, u32), String) {
     let filename = file_path
         .file_name()
@@ -168,7 +169,7 @@ pub fn run() {
         })
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![open_files, greet])
+        .invoke_handler(tauri::generate_handler![open_files, delete_file])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
