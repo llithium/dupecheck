@@ -9,9 +9,9 @@
   import { listen } from "@tauri-apps/api/event";
   import { onDestroy } from "svelte";
   import { Progress } from "$lib/components/ui/progress";
-  import prettyBytes from "pretty-bytes";
-  import * as Table from "$lib/components/ui/table/index.js";
-  import { openPath, revealItemInDir } from "@tauri-apps/plugin-opener";
+  import { openPath } from "@tauri-apps/plugin-opener";
+  import ImageButtons from "$lib/components/image-buttons.svelte";
+  import ImageDetailsTable from "$lib/components/image-details-table.svelte";
 
   let loading = $state(false);
   let loadingMessage = $state("Hashing...");
@@ -62,7 +62,7 @@
       {/if}
     </div>
     <div class="basis-1/3 flex justify-center">
-      <Button disabled={loading} onclick={openFiles} variant="outline">
+      <Button disabled={loading} onclick={openFiles}>
         {#if loading}
           <LoaderCircle class="animate-spin" />
           {loadingMessage}
@@ -100,6 +100,7 @@
                 <div class="font-semibold text-center text-sm pb-1">
                   {duplicate.filename1}
                 </div>
+
                 <button onclick={() => openPath(duplicate.file_path1)}>
                   <img
                     class="w-full max-h-[calc(100vh-150px)] object-contain"
@@ -108,42 +109,14 @@
                     srcset=""
                   />
                 </button>
-                <Table.Root>
-                  <Table.Caption>
-                    <button
-                      onclick={() => revealItemInDir(duplicate.file_path1)}
-                      >{duplicate.file_path1}</button
-                    ></Table.Caption
-                  >
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.Head class="w-[100px]">Details</Table.Head>
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-                    <Table.Row>
-                      <Table.Cell class="font-medium">Size</Table.Cell>
-                      <Table.Cell class="text-end"
-                        >{prettyBytes(duplicate.size1)}</Table.Cell
-                      >
-                    </Table.Row>
-                    <Table.Row>
-                      <Table.Cell class="font-medium">Resolution</Table.Cell>
-                      <Table.Cell class="text-end"
-                        >{duplicate.resolution1[0]} x {duplicate
-                          .resolution1[1]}</Table.Cell
-                      >
-                    </Table.Row>
-                    <Table.Row>
-                      <Table.Cell class="font-medium">Format</Table.Cell>
-                      <Table.Cell class="text-end"
-                        >{duplicate.format1.toLocaleUpperCase()}</Table.Cell
-                      >
-                    </Table.Row>
-                  </Table.Body>
-                </Table.Root>
-
-                <!--  TODO Add delete button -->
+                <ImageButtons filepath={duplicate.file_path1} />
+                <ImageDetailsTable
+                  filePath={duplicate.file_path1}
+                  size={duplicate.size1}
+                  resolutionX={duplicate.resolution1[0]}
+                  resolutionY={duplicate.resolution1[1]}
+                  format={duplicate.format1}
+                />
               </div>
               <div class="flex flex-col basis-1/2">
                 <div class="font-semibold text-center text-sm pb-1">
@@ -157,40 +130,14 @@
                     srcset=""
                   />
                 </button>
-                <Table.Root>
-                  <Table.Caption>
-                    <button
-                      onclick={() => revealItemInDir(duplicate.file_path2)}
-                      >{duplicate.file_path2}</button
-                    >
-                  </Table.Caption>
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.Head class="w-[100px]">Details</Table.Head>
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-                    <Table.Row>
-                      <Table.Cell class="font-medium">Size</Table.Cell>
-                      <Table.Cell class="text-end"
-                        >{prettyBytes(duplicate.size2)}</Table.Cell
-                      >
-                    </Table.Row>
-                    <Table.Row>
-                      <Table.Cell class="font-medium">Resolution</Table.Cell>
-                      <Table.Cell class="text-end"
-                        >{duplicate.resolution2[0]} x {duplicate
-                          .resolution2[1]}</Table.Cell
-                      >
-                    </Table.Row>
-                    <Table.Row>
-                      <Table.Cell class="font-medium">Format</Table.Cell>
-                      <Table.Cell class="text-end"
-                        >{duplicate.format2.toLocaleUpperCase()}</Table.Cell
-                      >
-                    </Table.Row>
-                  </Table.Body>
-                </Table.Root>
+                <ImageButtons filepath={duplicate.file_path2} />
+                <ImageDetailsTable
+                  filePath={duplicate.file_path2}
+                  size={duplicate.size2}
+                  resolutionX={duplicate.resolution2[0]}
+                  resolutionY={duplicate.resolution2[1]}
+                  format={duplicate.format2}
+                />
               </div>
             </div>
           </Carousel.Item>
