@@ -18,6 +18,9 @@ struct AppData {
 }
 #[derive(Serialize)]
 struct PotentialDuplicate {
+    filename1: String,
+    filename2: String,
+
     file_path1: String,
     file_path2: String,
     distance: u32,
@@ -101,14 +104,16 @@ fn compare_hashes(
                 let pathuf1 = PathBuf::from(file_path1);
                 let pathbuf2 = PathBuf::from(file_path2);
 
-                let (size1, resolution1, format1) = get_file_info(&pathuf1);
-                let (size2, resolution2, format2) = get_file_info(&pathbuf2);
+                let (filename1, size1, resolution1, format1) = get_file_info(&pathuf1);
+                let (filename2, size2, resolution2, format2) = get_file_info(&pathbuf2);
 
                 println!(
                     "Potential duplicates found: {} and {} (Hamming Distance: {})",
                     file_path1, file_path2, distance
                 );
                 duplicates.push(PotentialDuplicate {
+                    filename1,
+                    filename2,
                     file_path1: file_path1.to_string(),
                     file_path2: file_path2.to_string(),
                     distance,
@@ -125,7 +130,13 @@ fn compare_hashes(
     duplicates
 }
 
-fn get_file_info(file_path: &Path) -> (u64, (u32, u32), String) {
+fn get_file_info(file_path: &Path) -> (String, u64, (u32, u32), String) {
+    let filename = file_path
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
+
     let size = fs::metadata(file_path).unwrap().len();
 
     let img = image::open(file_path).unwrap();
@@ -136,7 +147,7 @@ fn get_file_info(file_path: &Path) -> (u64, (u32, u32), String) {
         .to_string_lossy()
         .to_string();
 
-    (size, (width, height), format)
+    (filename, size, (width, height), format)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

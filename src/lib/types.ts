@@ -1,4 +1,6 @@
 export interface PotentialDuplicate {
+  filename1: string;
+  filename2: string;
   file_path1: string;
   file_path2: string;
   distance: number;
