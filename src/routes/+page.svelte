@@ -10,6 +10,7 @@
   import { onDestroy } from "svelte";
   import { Progress } from "$lib/components/ui/progress";
   import prettyBytes from "pretty-bytes";
+  import * as Table from "$lib/components/ui/table/index.js";
 
   let loading = $state(false);
   let loadingMessage = $state("Hashing...");
@@ -51,7 +52,7 @@
   });
 </script>
 
-<main class="container">
+<main class="container pb-4">
   <div class="w-full flex justify-center pt-4">
     <Button disabled={loading} onclick={openFiles} variant="outline">
       {#if loading}
@@ -72,34 +73,70 @@
           <span>Distance: {duplicate.distance}</span>
           <div class="flex gap-2">
             <div class="flex flex-col basis-1/2">
-              <span>Size: {prettyBytes(duplicate.size1)}</span>
-              <span
-                >Resolution: {duplicate.resolution1[0]} x {duplicate
-                  .resolution1[1]}</span
-              >
               <img
                 class="w-full max-h-[calc(100vh-150px)] object-contain"
                 src={convertFileSrc(duplicate.file_path1)}
                 alt=""
                 srcset=""
               />
-              <span>{duplicate.file_path1}</span>
+
+              <Table.Root>
+                <Table.Caption>{duplicate.file_path1}</Table.Caption>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.Head class="w-[100px]">Details</Table.Head>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  <Table.Row>
+                    <Table.Cell class="font-medium">Size</Table.Cell>
+                    <Table.Cell class="text-end"
+                      >{prettyBytes(duplicate.size1)}</Table.Cell
+                    >
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell class="font-medium">Resolution</Table.Cell>
+                    <Table.Cell class="text-end"
+                      >{duplicate.resolution1[0]} x {duplicate
+                        .resolution1[1]}</Table.Cell
+                    >
+                  </Table.Row>
+                </Table.Body>
+              </Table.Root>
+
               <!--  TODO Add delete button -->
               <!-- TODO Add show in file browser button -->
             </div>
             <div class="flex flex-col basis-1/2">
-              <span>Size: {prettyBytes(duplicate.size2)}</span>
-              <span
-                >Resolution: {duplicate.resolution2[0]} x {duplicate
-                  .resolution2[1]}</span
-              >
               <img
                 class="w-full max-h-[calc(100vh-150px)] object-contain"
                 src={convertFileSrc(duplicate.file_path2)}
                 alt=""
                 srcset=""
               />
-              <span>{duplicate.file_path2}</span>
+              <Table.Root>
+                <Table.Caption>{duplicate.file_path2}</Table.Caption>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.Head class="w-[100px]">Details</Table.Head>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  <Table.Row>
+                    <Table.Cell class="font-medium">Size</Table.Cell>
+                    <Table.Cell class="text-end"
+                      >{prettyBytes(duplicate.size2)}</Table.Cell
+                    >
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell class="font-medium">Resolution</Table.Cell>
+                    <Table.Cell class="text-end"
+                      >{duplicate.resolution2[0]} x {duplicate
+                        .resolution2[1]}</Table.Cell
+                    >
+                  </Table.Row>
+                </Table.Body>
+              </Table.Root>
             </div>
           </div>
         </Carousel.Item>
