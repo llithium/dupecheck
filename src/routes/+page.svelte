@@ -16,46 +16,43 @@
   let loading = $state(false);
   let loadingMessage = $state("Hashing...");
   let totalFiles: number | null = $state(null);
-  let hashedFiles = $state(0);
+  let currentFiles = $state(0);
   let duplicates: PotentialDuplicate[] = $state(mockDuplicates);
 
   async function openFiles() {
-    // duplicates =
-    console.log(await invoke("open_files"));
+    duplicates = await invoke("open_files");
     loading = false;
   }
 
   const hashingStartedUnlisten = listen("hashing-started", () => {
     totalFiles = 0;
-    hashedFiles = 0;
+    currentFiles = 0;
     loading = true;
     loadingMessage = "Hashing...";
   });
   const totalFilesUnlisten = listen<number>("total-files", (event) => {
     totalFiles = event.payload;
   });
-  const hashedFilesUnlisten = listen<number>("hashed-file", (event) => {
-    hashedFiles += event.payload;
+  const hashedFilesUnlisten = listen<number>("current-file-count", (event) => {
+    currentFiles += event.payload;
   });
   const comparingStartedUnlisten = listen("comparing-started", () => {
+    currentFiles = 0;
     loadingMessage = "Comparing...";
   });
-  const comparingFinishedUnlisten = listen("comparing-finished", () => {
-    //TODO
-  });
+
   onDestroy(() => {
     hashingStartedUnlisten.then((f) => f());
     totalFilesUnlisten.then((f) => f());
     hashedFilesUnlisten.then((f) => f());
     comparingStartedUnlisten.then((f) => f());
-    comparingFinishedUnlisten.then((f) => f());
   });
 </script>
 
 <main class="container pb-4">
   <div class="w-full flex justify-start py-4 items-center">
     <div class="basis-1/3">
-      {#if duplicates.length > 0}
+      {#if duplicates.length > 0 && !loading}
         <span class="text-sm font-medium leading-none">
           Potential Duplicates: {duplicates.length}
         </span>
@@ -73,11 +70,13 @@
     </div>
     <div class="basis-1/3"></div>
   </div>
-  {#if loading && hashedFiles != totalFiles}
-    <Progress value={hashedFiles} max={totalFiles || 100} />
+  {#if loading && currentFiles != totalFiles}
+    <Progress value={currentFiles} max={totalFiles || 100} />
   {/if}
   {#if duplicates.length > 0}
-    <Carousel.Root class="mx-auto w-11/12">
+    <Carousel.Root
+      class={`mx-auto w-11/12 ${loading && "opacity-60 pointer-events-none"}`}
+    >
       <Carousel.Content>
         {#each duplicates as duplicate, i}
           <Carousel.Item>

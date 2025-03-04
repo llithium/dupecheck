@@ -61,20 +61,18 @@ async fn open_files(app: AppHandle) -> Result<Vec<PotentialDuplicate>, crate::er
         }
         app.emit("total-files", file_count).unwrap();
         files.par_iter().for_each(|file| {
-            match hash_file(app.clone(), file.as_path()) {
+            match hash_file(&app, file.as_path()) {
                 Ok(hash) => {
                     files_with_hash
                         .lock()
                         .unwrap()
                         .insert(file.to_string_lossy().to_string(), hash);
-                    app.emit("hashed-file", 1).unwrap();
+                    app.emit("current-file-count", 1).unwrap();
                 }
                 Err(e) => eprintln!("Failed to hash file: {:?}", e),
             };
         });
-        app.emit("comparing-started", "").unwrap();
-        let duplicates = compare_hashes(&files_with_hash.lock().unwrap());
-        app.emit("comparing-finished", "").unwrap();
+        let duplicates = compare_hashes(&app, &files_with_hash.lock().unwrap());
         println!("{}", time::OffsetDateTime::now_utc() - start);
         Ok(duplicates)
     } else {
@@ -82,15 +80,18 @@ async fn open_files(app: AppHandle) -> Result<Vec<PotentialDuplicate>, crate::er
     }
 }
 
-fn hash_file(app: AppHandle, path: &Path) -> Result<ImageHash, image::ImageError> {
+fn hash_file(app: &AppHandle, path: &Path) -> Result<ImageHash, image::ImageError> {
     let hasher = &app.state::<AppData>().hasher;
     Ok(hasher.hash_image(&image::open(path)?))
 }
 
 fn compare_hashes(
+    app: &AppHandle,
     file_hashes: &HashMap<String, image_hasher::ImageHash>,
 ) -> Vec<PotentialDuplicate> {
+    app.emit("comparing-started", "").unwrap();
     let file_paths: Vec<&String> = file_hashes.keys().collect();
+    app.emit("total-files", file_paths.len()).unwrap();
     let mut duplicates = Vec::new();
     for i in 0..file_paths.len() {
         for j in i + 1..file_paths.len() {
@@ -128,6 +129,7 @@ fn compare_hashes(
                 });
             }
         }
+        app.emit("current-file-count", 1).unwrap();
     }
     duplicates
 }
