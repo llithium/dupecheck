@@ -5,20 +5,38 @@
   import { invoke } from "@tauri-apps/api/core";
   import { convertFileSrc } from "@tauri-apps/api/core";
   import * as Carousel from "$lib/components/ui/carousel/index.js";
+  import LoaderCircle from "lucide-svelte/icons/loader-circle";
+  import { listen } from "@tauri-apps/api/event";
+  import { onDestroy } from "svelte";
 
+  let loading = $state(false);
   let duplicates: PotentialDuplicate[] = $state(mockDuplicates);
 
   async function openFiles() {
+    // loading = true;
     // duplicates =
     await invoke("open_files");
+    loading = false;
   }
+
+  const hashingStartedUnlisten = listen("hashing-started", () => {
+    loading = true;
+  });
+
+  onDestroy(() => {
+    hashingStartedUnlisten.then((f) => f());
+  });
 </script>
 
 <main class="container">
   <div class="w-full flex justify-center pt-4">
-    <Button onclick={openFiles} variant="outline">Open Folders</Button>
+    <Button disabled={loading} onclick={openFiles} variant="outline">
+      {#if loading}
+        <LoaderCircle class="animate-spin" />
+      {/if}
+      Open Folders</Button
+    >
   </div>
-
   <Carousel.Root class="mx-auto w-10/12">
     <Carousel.Content>
       {#each duplicates as duplicate}

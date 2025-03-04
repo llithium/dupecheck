@@ -6,7 +6,7 @@ use std::{
 
 use image_hasher::{HasherConfig, ImageHash};
 use rayon::prelude::*;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_dialog::DialogExt;
 use walkdir::WalkDir;
 mod error;
@@ -25,8 +25,9 @@ fn greet(name: &str) -> String {
 
 #[tauri::command]
 async fn open_files(app: AppHandle) -> Result<Vec<PotentialDuplicate>, crate::error::Error> {
-    let start = time::OffsetDateTime::now_utc();
     let folders = app.dialog().file().blocking_pick_folders();
+    let start = time::OffsetDateTime::now_utc();
+    app.emit("hashing-started", "").unwrap();
     if let Some(paths) = folders {
         let files_with_hash = Arc::new(Mutex::new(HashMap::new()));
         // let mut file_count = 0;
