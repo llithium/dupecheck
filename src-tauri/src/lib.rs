@@ -131,7 +131,7 @@ fn compare_hashes(
 
 #[tauri::command]
 fn delete_file(path: &str) -> Result<(), crate::error::Error> {
-    std::fs::remove_file(path)?;
+    trash::delete(path)?;
     Ok(())
 }
 

@@ -29,4 +29,5 @@ image = "0.25.5"
 thiserror = "2.0.11"
 rayon = "1.10.0"
 time = "0.3.37"
+trash = "5.2.2"
 

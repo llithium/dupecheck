@@ -2,6 +2,8 @@
 pub enum Error {
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    #[error(transparent)]
+    Trash(#[from] trash::Error),
 }
 
 impl serde::Serialize for Error {

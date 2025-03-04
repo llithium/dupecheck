@@ -41,8 +41,7 @@
       <Dialog.Header class="select-none">
         <Dialog.Title>Are you sure?</Dialog.Title>
         <Dialog.Description>
-          This action cannot be undone. The file <strong>{filepath}</strong> will
-          be permanently deleted from your device.
+          The file <strong>{filepath}</strong> will be moved to the system's trash.
         </Dialog.Description>
       </Dialog.Header>
       <Dialog.Footer class="select-none">
