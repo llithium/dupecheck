@@ -9,16 +9,17 @@
   import { listen } from "@tauri-apps/api/event";
   import { onDestroy } from "svelte";
   import { Progress } from "$lib/components/ui/progress";
+  import prettyBytes from "pretty-bytes";
 
   let loading = $state(false);
-  let totalFiles = $state(0);
+  let totalFiles: number | null = $state(null);
   let hashedFiles = $state(0);
   let duplicates: PotentialDuplicate[] = $state(mockDuplicates);
 
   async function openFiles() {
     // loading = true;
     // duplicates =
-    await invoke("open_files");
+    console.log(await invoke("open_files"));
     loading = false;
   }
 
@@ -51,33 +52,43 @@
     >
   </div>
   {#if loading}
-    <Progress value={hashedFiles} max={totalFiles} />
+    <Progress value={hashedFiles} max={totalFiles || 100} />
   {/if}
-  <Carousel.Root class="mx-auto w-10/12">
+  <Carousel.Root class="mx-auto w-11/12">
     <Carousel.Content>
       {#each duplicates as duplicate}
         <Carousel.Item>
-          <span>Distance: {duplicate[2]}</span>
+          <span>Distance: {duplicate.distance}</span>
           <div class="flex gap-2">
             <div class="flex flex-col basis-1/2">
+              <span>Size: {prettyBytes(duplicate.size1)}</span>
+              <span
+                >Resolution: {duplicate.resolution1[0]} x {duplicate
+                  .resolution1[1]}</span
+              >
               <img
                 class="w-full max-h-[calc(100vh-150px)] object-contain"
-                src={convertFileSrc(duplicate[0])}
+                src={convertFileSrc(duplicate.file_path1)}
                 alt=""
                 srcset=""
               />
-              <span>{duplicate[0]}</span>
+              <span>{duplicate.file_path1}</span>
               <!--  TODO Add delete button -->
               <!-- TODO Add show in file browser button -->
             </div>
-            <div class="flex-col basis-1/2">
+            <div class="flex flex-col basis-1/2">
+              <span>Size: {prettyBytes(duplicate.size2)}</span>
+              <span
+                >Resolution: {duplicate.resolution2[0]} x {duplicate
+                  .resolution2[1]}</span
+              >
               <img
                 class="w-full max-h-[calc(100vh-150px)] object-contain"
-                src={convertFileSrc(duplicate[1])}
+                src={convertFileSrc(duplicate.file_path2)}
                 alt=""
                 srcset=""
               />
-              <span>{duplicate[1]}</span>
+              <span>{duplicate.file_path2}</span>
             </div>
           </div>
         </Carousel.Item>

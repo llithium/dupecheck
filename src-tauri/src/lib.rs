@@ -1,11 +1,14 @@
 use std::{
     collections::HashMap,
-    path::Path,
+    fs,
+    path::{Path, PathBuf},
     sync::{Arc, Mutex},
 };
 
+use image::GenericImageView;
 use image_hasher::{HasherConfig, ImageHash};
 use rayon::prelude::*;
+use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_dialog::DialogExt;
 use walkdir::WalkDir;
@@ -13,8 +16,18 @@ mod error;
 struct AppData {
     hasher: image_hasher::Hasher,
 }
-
-type PotentialDuplicate = (String, String, u32);
+#[derive(Serialize)]
+struct PotentialDuplicate {
+    file_path1: String,
+    file_path2: String,
+    distance: u32,
+    size1: u64,
+    size2: u64,
+    resolution1: (u32, u32),
+    resolution2: (u32, u32),
+    format1: String,
+    format2: String,
+}
 
 const EXTENSIONS: [&str; 4] = ["jpg", "jpeg", "png", "webp"];
 
@@ -72,29 +85,58 @@ fn hash_file(app: AppHandle, path: &Path) -> Result<ImageHash, image::ImageError
 fn compare_hashes(
     file_hashes: &HashMap<String, image_hasher::ImageHash>,
 ) -> Vec<PotentialDuplicate> {
-    let filenames: Vec<&String> = file_hashes.keys().collect();
+    let file_paths: Vec<&String> = file_hashes.keys().collect();
     let mut duplicates = Vec::new();
-    for i in 0..filenames.len() {
-        for j in i + 1..filenames.len() {
-            let filename1 = filenames[i];
-            let filename2 = filenames[j];
+    for i in 0..file_paths.len() {
+        for j in i + 1..file_paths.len() {
+            let file_path1 = file_paths[i];
+            let file_path2 = file_paths[j];
 
-            let hash1 = file_hashes.get(filename1).unwrap();
-            let hash2 = file_hashes.get(filename2).unwrap();
+            let hash1 = file_hashes.get(file_path1).unwrap();
+            let hash2 = file_hashes.get(file_path2).unwrap();
 
             let distance = hash1.dist(hash2);
 
             if distance <= 4 {
+                let pathuf1 = PathBuf::from(file_path1);
+                let pathbuf2 = PathBuf::from(file_path2);
+
+                let (size1, resolution1, format1) = get_file_info(&pathuf1);
+                let (size2, resolution2, format2) = get_file_info(&pathbuf2);
+
                 println!(
                     "Potential duplicates found: {} and {} (Hamming Distance: {})",
-                    filename1, filename2, distance
+                    file_path1, file_path2, distance
                 );
-                //TODO Add filesize and resolution
-                duplicates.push((filename1.to_string(), filename2.to_string(), distance));
+                duplicates.push(PotentialDuplicate {
+                    file_path1: file_path1.to_string(),
+                    file_path2: file_path2.to_string(),
+                    distance,
+                    size1,
+                    size2,
+                    resolution1,
+                    resolution2,
+                    format1,
+                    format2,
+                });
             }
         }
     }
     duplicates
+}
+
+fn get_file_info(file_path: &Path) -> (u64, (u32, u32), String) {
+    let size = fs::metadata(file_path).unwrap().len();
+
+    let img = image::open(file_path).unwrap();
+    let (width, height) = img.dimensions();
+    let format = file_path
+        .extension()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
+
+    (size, (width, height), format)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
