@@ -53,7 +53,7 @@
 </script>
 
 <main class="container pb-4">
-  <div class="w-full flex justify-center pt-4">
+  <div class="w-full flex justify-center py-4">
     <Button disabled={loading} onclick={openFiles} variant="outline">
       {#if loading}
         <LoaderCircle class="animate-spin" />
@@ -70,9 +70,14 @@
     <Carousel.Content>
       {#each duplicates as duplicate}
         <Carousel.Item>
-          <span>Distance: {duplicate.distance}</span>
+          <div class="font-semibold text-sm text-center">
+            Distance: {duplicate.distance}
+          </div>
           <div class="flex gap-2">
             <div class="flex flex-col basis-1/2">
+              <div class="font-semibold text-sm pb-1">
+                {duplicate.filename1}
+              </div>
               <img
                 class="w-full max-h-[calc(100vh-150px)] object-contain"
                 src={convertFileSrc(duplicate.file_path1)}
@@ -101,6 +106,12 @@
                         .resolution1[1]}</Table.Cell
                     >
                   </Table.Row>
+                  <Table.Row>
+                    <Table.Cell class="font-medium">Format</Table.Cell>
+                    <Table.Cell class="text-end"
+                      >{duplicate.format1.toLocaleUpperCase()}</Table.Cell
+                    >
+                  </Table.Row>
                 </Table.Body>
               </Table.Root>
 
@@ -108,6 +119,9 @@
               <!-- TODO Add show in file browser button -->
             </div>
             <div class="flex flex-col basis-1/2">
+              <div class="font-semibold text-sm pb-1 text-end">
+                {duplicate.filename2}
+              </div>
               <img
                 class="w-full max-h-[calc(100vh-150px)] object-contain"
                 src={convertFileSrc(duplicate.file_path2)}
@@ -133,6 +147,12 @@
                     <Table.Cell class="text-end"
                       >{duplicate.resolution2[0]} x {duplicate
                         .resolution2[1]}</Table.Cell
+                    >
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell class="font-medium">Format</Table.Cell>
+                    <Table.Cell class="text-end"
+                      >{duplicate.format2.toLocaleUpperCase()}</Table.Cell
                     >
                   </Table.Row>
                 </Table.Body>
