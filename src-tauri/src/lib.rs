@@ -37,7 +37,6 @@ const EXTENSIONS: [&str; 4] = ["jpg", "jpeg", "png", "webp"];
 #[tauri::command]
 async fn open_files(app: AppHandle) -> Result<Vec<PotentialDuplicate>, crate::error::Error> {
     let folders = app.dialog().file().blocking_pick_folders();
-    let start = time::OffsetDateTime::now_utc();
     if let Some(paths) = folders {
         app.emit("hashing-started", "").unwrap();
         let files_with_hash = Arc::new(Mutex::new(HashMap::new()));
@@ -68,7 +67,6 @@ async fn open_files(app: AppHandle) -> Result<Vec<PotentialDuplicate>, crate::er
             };
         });
         let duplicates = compare_hashes(&app, &files_with_hash.lock().unwrap());
-        println!("{}", time::OffsetDateTime::now_utc() - start);
         Ok(duplicates)
     } else {
         Ok(Vec::new())
