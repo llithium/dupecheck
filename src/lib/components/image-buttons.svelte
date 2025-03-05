@@ -4,7 +4,6 @@
   } from "$lib/components/ui/button/button.svelte";
   import { openPath, revealItemInDir } from "@tauri-apps/plugin-opener";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
-  import { invoke } from "@tauri-apps/api/core";
   interface Props {
     filepath: string;
     deleteFile: (event: SubmitEvent) => void;
@@ -12,6 +11,8 @@
   }
 
   let { filepath, deleteFile, index }: Props = $props();
+
+  let dialogOpen = $state(false);
 </script>
 
 <div class="w-full flex gap-2 pt-1">
@@ -27,7 +28,7 @@
     class="basis-1/3"
     variant="secondary">Reveal</Button
   >
-  <Dialog.Root>
+  <Dialog.Root bind:open={dialogOpen}>
     <Dialog.Trigger
       class={buttonVariants({
         variant: "destructive",
@@ -45,7 +46,12 @@
         </Dialog.Description>
       </Dialog.Header>
       <Dialog.Footer class="select-none">
-        <form onsubmit={deleteFile}>
+        <form
+          onsubmit={(event) => {
+            dialogOpen = false;
+            deleteFile(event);
+          }}
+        >
           <input type="hidden" name="index" value={index} />
           <input type="hidden" name="path" value={filepath} />
 
