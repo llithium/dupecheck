@@ -32,7 +32,10 @@ struct PotentialDuplicate {
     format2: String,
 }
 
-const EXTENSIONS: [&str; 4] = ["jpg", "jpeg", "png", "webp"];
+const EXTENSIONS: [&str; 16] = [
+    "jpg", "jpeg", "png", "webp", "avif", "bmp", "dds", "farbfeld", "gif", "hdr", "ico", "exr",
+    "pnm", "qoi", "tga", "tiff",
+];
 
 #[tauri::command]
 async fn open_files(app: AppHandle) -> Result<Vec<PotentialDuplicate>, crate::error::Error> {
@@ -46,7 +49,7 @@ async fn open_files(app: AppHandle) -> Result<Vec<PotentialDuplicate>, crate::er
             let path = path.into_path().expect("Convert FilePath into PathBuf");
             for entry in WalkDir::new(&path).into_iter().filter_map(|e| e.ok()) {
                 if let Some(ext) = entry.path().extension() {
-                    if EXTENSIONS.contains(&ext.to_str().unwrap_or("")) {
+                    if EXTENSIONS.contains(&ext.to_ascii_lowercase().to_str().unwrap_or("")) {
                         files.push(entry.path().to_path_buf());
                         file_count += 1;
                     }
