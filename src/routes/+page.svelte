@@ -22,9 +22,16 @@
   let carouselAPI = $state<CarouselAPI>();
 
   async function openFiles() {
-    duplicates = await invoke("open_files");
-    carouselAPI?.scrollTo(0);
-    loading = false;
+    try {
+      const files: PotentialDuplicate[] = await invoke("open_files");
+      if (files.length > 0) {
+        duplicates = files;
+        carouselAPI?.scrollTo(0);
+      }
+    } catch (error) {
+    } finally {
+      loading = false;
+    }
   }
   async function deleteFile(event: SubmitEvent) {
     event.preventDefault();
@@ -34,8 +41,6 @@
 
     try {
       await invoke("delete_file", { path: path });
-      console.log("Working");
-
       duplicates.splice(index, 1);
     } catch (error) {}
   }
