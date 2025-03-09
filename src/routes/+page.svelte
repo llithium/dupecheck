@@ -57,6 +57,9 @@
     try {
       await invoke("delete_file", { path: path });
       duplicates.splice(index, 1);
+      if (currentSlide + 1 > duplicates.length) {
+        carouselAPI?.scrollTo(duplicates.length - 1);
+      }
     } catch (error) {}
   }
   const hashingStartedUnlisten = listen("hashing-started", () => {
@@ -95,12 +98,13 @@
         <Tooltip.Provider>
           <Tooltip.Root>
             <Tooltip.Trigger>
-              <Badge>
-                <Info class="h-3.5 w-3.5 mr-1.5" />Distance: {duplicates[
-                  currentSlide
-                ].distance}
-              </Badge></Tooltip.Trigger
-            >
+              {#snippet child({ props })}
+                <Badge {...props}>
+                  <Info class="h-3.5 w-3.5 mr-1.5" />Distance: {duplicates[
+                    currentSlide
+                  ].distance}
+                </Badge>{/snippet}
+            </Tooltip.Trigger>
             <Tooltip.Content>
               <p class="text-sm">Similarity of the images (0 = identical)</p>
             </Tooltip.Content>
@@ -109,16 +113,35 @@
       {/if}
     </div>
     <div class="flex items-center gap-2">
-      <span class="text-sm font-medium">Threshold:</span>
-      <div class="w-32 flex items-center gap-2">
-        <Slider
-          type="single"
-          bind:value={threshold}
-          min={0}
-          max={30}
-          step={1}
-        />
-        <span class="w-6 text-center">{threshold}</span>
+      <div
+        class="flex gap-3 items-center ${loading &&
+          'opacity-60 pointer-events-none'}"
+      >
+        <Tooltip.Provider>
+          <Tooltip.Root>
+            <Tooltip.Trigger>
+              {#snippet child({ props })}
+                <span {...props} class="text-sm font-medium">Threshold:</span>
+              {/snippet}
+            </Tooltip.Trigger>
+            <Tooltip.Content>
+              <p class="text-sm">
+                Distance threshold for potential duplicates (0 = identical)
+              </p>
+            </Tooltip.Content>
+          </Tooltip.Root>
+        </Tooltip.Provider>
+        <div class="w-32 flex items-center gap-2">
+          <Slider
+            type="single"
+            bind:value={threshold}
+            min={0}
+            max={30}
+            step={1}
+          />
+
+          <span class="w-6 text-centerp pl-1">{threshold}</span>
+        </div>
       </div>
       <Button disabled={loading} onclick={openFiles}>
         {#if loading}
