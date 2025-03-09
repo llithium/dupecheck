@@ -38,7 +38,10 @@ const EXTENSIONS: [&str; 16] = [
 ];
 
 #[tauri::command]
-async fn open_files(app: AppHandle) -> Result<Vec<PotentialDuplicate>, crate::error::Error> {
+async fn open_files(
+    app: AppHandle,
+    distance_threshold: u32,
+) -> Result<Vec<PotentialDuplicate>, crate::error::Error> {
     let folders = app.dialog().file().blocking_pick_folders();
     if let Some(paths) = folders {
         app.emit("hashing-started", "").unwrap();
@@ -69,7 +72,7 @@ async fn open_files(app: AppHandle) -> Result<Vec<PotentialDuplicate>, crate::er
                 Err(e) => eprintln!("Failed to hash file: {:?}", e),
             };
         });
-        let duplicates = compare_hashes(&app, &files_with_hash.lock().unwrap());
+        let duplicates = compare_hashes(&app, &files_with_hash.lock().unwrap(), distance_threshold);
         Ok(duplicates)
     } else {
         Ok(Vec::new())
@@ -84,6 +87,7 @@ fn hash_file(app: &AppHandle, path: &Path) -> Result<ImageHash, image::ImageErro
 fn compare_hashes(
     app: &AppHandle,
     file_hashes: &HashMap<String, image_hasher::ImageHash>,
+    distance_threshold: u32,
 ) -> Vec<PotentialDuplicate> {
     app.emit("comparing-started", "").unwrap();
     let file_paths: Vec<&String> = file_hashes.keys().collect();
@@ -99,17 +103,13 @@ fn compare_hashes(
 
             let distance = hash1.dist(hash2);
 
-            if distance <= 9 {
+            if distance <= distance_threshold {
                 let pathuf1 = PathBuf::from(file_path1);
                 let pathbuf2 = PathBuf::from(file_path2);
 
                 let (filename1, size1, resolution1, format1) = get_file_info(&pathuf1);
                 let (filename2, size2, resolution2, format2) = get_file_info(&pathbuf2);
 
-                println!(
-                    "Potential duplicates found: {} and {} (Hamming Distance: {})",
-                    file_path1, file_path2, distance
-                );
                 duplicates.push(PotentialDuplicate {
                     filename1,
                     filename2,

@@ -5,6 +5,8 @@
   import { convertFileSrc } from "@tauri-apps/api/core";
   import * as Carousel from "$lib/components/ui/carousel/index.js";
   import LoaderCircle from "lucide-svelte/icons/loader-circle";
+  import FolderOpen from "lucide-svelte/icons/folder-open";
+  import Info from "lucide-svelte/icons/info";
   import { listen } from "@tauri-apps/api/event";
   import { onDestroy } from "svelte";
   import { Progress } from "$lib/components/ui/progress";
@@ -12,18 +14,31 @@
   import ImageButtons from "$lib/components/image-buttons.svelte";
   import ImageDetailsTable from "$lib/components/image-details-table.svelte";
   import { type CarouselAPI } from "$lib/components/ui/carousel/context.js";
+  import { Slider } from "$lib/components/ui/slider/index.js";
+  import { Badge } from "$lib/components/ui/badge/index.js";
+  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
 
   let loading = $state(false);
   let loadingMessage = $state("Hashing...");
   let totalFiles: number | null = $state(null);
   let currentFiles = $state(0);
   let duplicates: PotentialDuplicate[] = $state([]);
+  let threshold = $state(9);
+  let currentSlide = $state(1);
 
   let carouselAPI = $state<CarouselAPI>();
-
+  $effect(() => {
+    if (carouselAPI) {
+      carouselAPI.on("slidesInView", () => {
+        currentSlide = carouselAPI?.slidesInView()[0] || 0;
+      });
+    }
+  });
   async function openFiles() {
     try {
-      const files: PotentialDuplicate[] = await invoke("open_files");
+      const files: PotentialDuplicate[] = await invoke("open_files", {
+        distanceThreshold: threshold,
+      });
       if (files.length > 0) {
         duplicates = files;
         carouselAPI?.scrollTo(0);
@@ -70,25 +85,51 @@
 </script>
 
 <main class="container pb-4">
-  <div class="w-full flex justify-start py-4 items-center">
-    <div class="basis-1/3">
+  <div class="w-full flex justify-between py-4 items-center">
+    <div class=" flex gap-2 items-center">
       {#if duplicates.length > 0 && !loading}
-        <span class="text-sm font-medium leading-none">
-          Potential Duplicates: {duplicates.length}
-        </span>
+        <Badge variant="secondary">
+          {currentSlide + 1}/{duplicates.length} Potential Duplicates
+        </Badge>
+
+        <Tooltip.Provider>
+          <Tooltip.Root>
+            <Tooltip.Trigger>
+              <Badge>
+                <Info class="h-3.5 w-3.5 mr-1.5" />Distance: {duplicates[
+                  currentSlide
+                ].distance}
+              </Badge></Tooltip.Trigger
+            >
+            <Tooltip.Content>
+              <p class="text-sm">Similarity of the images (0 = identical)</p>
+            </Tooltip.Content>
+          </Tooltip.Root>
+        </Tooltip.Provider>
       {/if}
     </div>
-    <div class="basis-1/3 flex justify-center">
+    <div class="flex items-center gap-2">
+      <span class="text-sm font-medium">Threshold:</span>
+      <div class="w-32 flex items-center gap-2">
+        <Slider
+          type="single"
+          bind:value={threshold}
+          min={0}
+          max={30}
+          step={1}
+        />
+        <span class="w-6 text-center">{threshold}</span>
+      </div>
       <Button disabled={loading} onclick={openFiles}>
         {#if loading}
           <LoaderCircle class="animate-spin" />
           {loadingMessage}
         {:else}
+          <FolderOpen />
           Open Folders
         {/if}
       </Button>
     </div>
-    <div class="basis-1/3"></div>
   </div>
   {#if loading && currentFiles != totalFiles}
     <Progress value={currentFiles} max={totalFiles || 100} />
@@ -101,20 +142,6 @@
       <Carousel.Content>
         {#each duplicates as duplicate, i}
           <Carousel.Item>
-            <div class="w-full flex justify-start items-center pb-2">
-              <div class="basis-1/3">
-                <span class="text-muted-foreground text-sm">
-                  {i + 1}/{duplicates.length}
-                </span>
-              </div>
-              <div class="basis-1/3 flex justify-center">
-                <div class="font-semibold text-sm text-center">
-                  Distance: {duplicate.distance}
-                </div>
-              </div>
-              <div class="basis-1/3"></div>
-            </div>
-
             <div class="flex gap-2">
               <div class="flex flex-col basis-1/2">
                 <div class="font-semibold text-center text-sm pb-1">

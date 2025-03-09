@@ -4,6 +4,10 @@
   } from "$lib/components/ui/button/button.svelte";
   import { openPath, revealItemInDir } from "@tauri-apps/plugin-opener";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
+  import Eye from "lucide-svelte/icons/eye";
+  import FolderOpen from "lucide-svelte/icons/folder-open";
+  import Trash2 from "lucide-svelte/icons/trash-2";
+
   interface Props {
     filepath: string;
     deleteFile: (event: SubmitEvent) => void;
@@ -20,13 +24,19 @@
     size="sm"
     onclick={() => openPath(filepath)}
     class="basis-1/3"
-    variant="secondary">Open</Button
+    variant="secondary"
+  >
+    <Eye />
+    Open</Button
   >
   <Button
     size="sm"
     onclick={() => revealItemInDir(filepath)}
     class="basis-1/3"
-    variant="secondary">Reveal</Button
+    variant="secondary"
+  >
+    <FolderOpen />
+    Reveal</Button
   >
   <Dialog.Root bind:open={dialogOpen}>
     <Dialog.Trigger
@@ -36,6 +46,7 @@
         size: "sm",
       })}
     >
+      <Trash2 />
       Delete
     </Dialog.Trigger>
     <Dialog.Content>
