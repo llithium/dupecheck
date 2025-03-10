@@ -25,7 +25,7 @@
   let currentFiles = $state(0);
   let duplicates: PotentialDuplicate[] = $state([]);
   let threshold = $state(parseInt(localStorage.getItem("threshold") || "9"));
-  let currentSlide = $state(1);
+  let currentSlide = $state(0);
 
   let carouselAPI = $state<CarouselAPI>();
   $effect(() => {
