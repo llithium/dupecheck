@@ -17,13 +17,14 @@
   import { Slider } from "$lib/components/ui/slider/index.js";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
+  import debounce from "debounce";
 
   let loading = $state(false);
   let loadingMessage = $state("Hashing...");
   let totalFiles: number | null = $state(null);
   let currentFiles = $state(0);
   let duplicates: PotentialDuplicate[] = $state([]);
-  let threshold = $state(9);
+  let threshold = $state(parseInt(localStorage.getItem("threshold") || "9"));
   let currentSlide = $state(1);
 
   let carouselAPI = $state<CarouselAPI>();
@@ -34,6 +35,16 @@
       });
     }
   });
+
+  const saveThreshold = debounce(
+    () => localStorage.setItem("threshold", threshold.toString()),
+    300
+  );
+  $effect(() => {
+    threshold;
+    saveThreshold();
+  });
+
   async function openFiles() {
     try {
       const files: PotentialDuplicate[] = await invoke("open_files", {
@@ -88,8 +99,8 @@
 </script>
 
 <main class="container pb-4">
-  <div class="w-full flex justify-between py-4 items-center">
-    <div class=" flex gap-2 items-center">
+  <div class="w-full flex justify-between py-4 gap-4 items-center">
+    <div class="flex gap-4 items-center">
       {#if duplicates.length > 0 && !loading}
         <Badge variant="secondary">
           {currentSlide + 1}/{duplicates.length} Potential Duplicates
@@ -112,7 +123,7 @@
         </Tooltip.Provider>
       {/if}
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-4">
       <div
         class={`flex gap-3 items-center ${
           loading && "opacity-50 pointer-events-none"
@@ -122,7 +133,9 @@
           <Tooltip.Root>
             <Tooltip.Trigger>
               {#snippet child({ props })}
-                <span {...props} class="text-sm font-medium">Threshold:</span>
+                <span {...props} class="text-sm font-medium leading-none"
+                  >Threshold:</span
+                >
               {/snippet}
             </Tooltip.Trigger>
             <Tooltip.Content>
@@ -141,7 +154,9 @@
             step={1}
           />
 
-          <span class="w-6 text-centerp pl-1">{threshold}</span>
+          <span class="w-6 text-center pl-1 text-sm font-medium leading-none"
+            >{threshold}</span
+          >
         </div>
       </div>
       <Button disabled={loading} onclick={openFiles}>

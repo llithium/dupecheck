@@ -8,6 +8,3 @@
 
 <ModeWatcher />
 {@render children()}
-
-<style>
-</style>
