@@ -38,10 +38,7 @@ const EXTENSIONS: [&str; 16] = [
 ];
 
 #[tauri::command]
-async fn open_files(
-    app: AppHandle,
-    distance_threshold: u32,
-) -> Result<Vec<PotentialDuplicate>, crate::error::Error> {
+async fn open_files(app: AppHandle, distance_threshold: u32) -> Option<Vec<PotentialDuplicate>> {
     let folders = app.dialog().file().blocking_pick_folders();
     if let Some(paths) = folders {
         app.emit("hashing-started", "").unwrap();
@@ -73,9 +70,9 @@ async fn open_files(
             };
         });
         let duplicates = compare_hashes(&app, &files_with_hash.lock().unwrap(), distance_threshold);
-        Ok(duplicates)
+        Some(duplicates)
     } else {
-        Ok(Vec::new())
+        None
     }
 }
 

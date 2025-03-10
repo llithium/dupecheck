@@ -50,7 +50,7 @@
       const files: PotentialDuplicate[] = await invoke("open_files", {
         distanceThreshold: threshold,
       });
-      if (files.length > 0) {
+      if (files) {
         duplicates = files;
         carouselAPI?.scrollTo(0);
       }
