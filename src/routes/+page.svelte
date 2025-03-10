@@ -114,8 +114,9 @@
     </div>
     <div class="flex items-center gap-2">
       <div
-        class="flex gap-3 items-center ${loading &&
-          'opacity-60 pointer-events-none'}"
+        class={`flex gap-3 items-center ${
+          loading && "opacity-50 pointer-events-none"
+        }`}
       >
         <Tooltip.Provider>
           <Tooltip.Root>
@@ -160,7 +161,7 @@
   {#if duplicates.length > 0}
     <Carousel.Root
       setApi={(emblaApi) => (carouselAPI = emblaApi)}
-      class={`mx-auto w-11/12 ${loading && "opacity-60 pointer-events-none"}`}
+      class={`mx-auto w-11/12 ${loading && "opacity-50 pointer-events-none"}`}
     >
       <Carousel.Content>
         {#each duplicates as duplicate, i}
