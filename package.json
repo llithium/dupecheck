@@ -17,8 +17,8 @@
     "@tauri-apps/plugin-dialog": "~2.2.0",
     "@tauri-apps/plugin-opener": "^2.2.6",
     "debounce": "^2.2.0",
-    "mode-watcher": "^0.5.1",
-    "pretty-bytes": "^6.1.1"
+    "pretty-bytes": "^6.1.1",
+    "svelte-sonner": "^0.3.28"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.6",
@@ -30,6 +30,7 @@
     "clsx": "^2.1.1",
     "embla-carousel-svelte": "^8.5.2",
     "lucide-svelte": "0.479.0",
+    "mode-watcher": "^0.5.1",
     "postcss": "^8.5.3",
     "svelte": "^5.0.0",
     "svelte-check": "^4.0.0",

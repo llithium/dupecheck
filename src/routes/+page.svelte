@@ -18,6 +18,7 @@
   import { Badge } from "$lib/components/ui/badge/index.js";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import debounce from "debounce";
+  import { toast } from "svelte-sonner";
 
   let loading = $state(false);
   let loadingMessage = $state("Hashing...");
@@ -51,10 +52,15 @@
         distanceThreshold: threshold,
       });
       if (files) {
-        duplicates = files;
-        carouselAPI?.scrollTo(0);
+        if (files.length < 1) {
+          toast.info("No duplicates found");
+        } else {
+          duplicates = files;
+          carouselAPI?.scrollTo(0);
+        }
       }
     } catch (error) {
+      toast.error(error as string);
     } finally {
       loading = false;
     }

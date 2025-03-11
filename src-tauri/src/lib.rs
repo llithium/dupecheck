@@ -89,41 +89,42 @@ fn compare_hashes(
     app.emit("comparing-started", "").unwrap();
     let file_paths: Vec<&String> = file_hashes.keys().collect();
     app.emit("total-files", file_paths.len()).unwrap();
-    let mut duplicates = Vec::new();
-    for i in 0..file_paths.len() {
-        for j in i + 1..file_paths.len() {
-            let file_path1 = file_paths[i];
-            let file_path2 = file_paths[j];
-
-            let hash1 = file_hashes.get(file_path1).unwrap();
-            let hash2 = file_hashes.get(file_path2).unwrap();
-
-            let distance = hash1.dist(hash2);
-
-            if distance <= distance_threshold {
-                let pathuf1 = PathBuf::from(file_path1);
-                let pathbuf2 = PathBuf::from(file_path2);
-
-                let (filename1, size1, resolution1, format1) = get_file_info(&pathuf1);
-                let (filename2, size2, resolution2, format2) = get_file_info(&pathbuf2);
-
-                duplicates.push(PotentialDuplicate {
-                    filename1,
-                    filename2,
-                    file_path1: file_path1.to_string(),
-                    file_path2: file_path2.to_string(),
-                    distance,
-                    size1,
-                    size2,
-                    resolution1,
-                    resolution2,
-                    format1,
-                    format2,
-                });
-            }
-        }
-        app.emit("current-file-count", 1).unwrap();
-    }
+    let duplicates: Vec<PotentialDuplicate> = file_paths
+        .par_iter()
+        .enumerate()
+        .flat_map(|(i, file_path1)| {
+            app.emit("current-file-count", 1).unwrap();
+            file_paths[i + 1..]
+                .par_iter()
+                .filter_map(|file_path2| {
+                    let hash1 = file_hashes.get(*file_path1).unwrap();
+                    let hash2 = file_hashes.get(*file_path2).unwrap();
+                    let distance = hash1.dist(hash2);
+                    if distance <= distance_threshold {
+                        let pathbuf1 = PathBuf::from(*file_path1);
+                        let pathbuf2 = PathBuf::from(*file_path2);
+                        let (filename1, size1, resolution1, format1) = get_file_info(&pathbuf1);
+                        let (filename2, size2, resolution2, format2) = get_file_info(&pathbuf2);
+                        Some(PotentialDuplicate {
+                            filename1,
+                            filename2,
+                            file_path1: file_path1.to_string(),
+                            file_path2: file_path2.to_string(),
+                            distance,
+                            size1,
+                            size2,
+                            resolution1,
+                            resolution2,
+                            format1,
+                            format2,
+                        })
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect();
     duplicates
 }
 
