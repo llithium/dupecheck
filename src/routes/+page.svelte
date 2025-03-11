@@ -22,7 +22,7 @@
 
   let loading = $state(false);
   let loadingMessage = $state("Hashing...");
-  let totalFiles: number | null = $state(null);
+  let totalFiles = $state(0);
   let currentFiles = $state(0);
   let duplicates: PotentialDuplicate[] = $state([]);
   let threshold = $state(parseInt(localStorage.getItem("threshold") || "9"));
@@ -52,11 +52,13 @@
         distanceThreshold: threshold,
       });
       if (files) {
-        if (files.length < 1) {
+        duplicates = files;
+        if (files.length === 0) {
           toast.info("No duplicates found");
-        } else {
-          duplicates = files;
+          currentSlide = 0;
+        } else if (files.length > 1) {
           carouselAPI?.scrollTo(0);
+          currentSlide = 0;
         }
       }
     } catch (error) {
@@ -74,10 +76,15 @@
     try {
       await invoke("delete_file", { path: path });
       duplicates.splice(index, 1);
-      if (currentSlide + 1 > duplicates.length) {
+      if (duplicates.length === 0) {
+        currentSlide = 0;
+      } else if (currentSlide + 1 > duplicates.length) {
         carouselAPI?.scrollTo(duplicates.length - 1);
+        currentSlide = duplicates.length - 1;
       }
-    } catch (error) {}
+    } catch (error) {
+      toast.error(error as string);
+    }
   }
   const hashingStartedUnlisten = listen("hashing-started", () => {
     totalFiles = 0;
@@ -108,7 +115,7 @@
   <div class="w-full flex justify-between py-4 gap-4 items-center">
     <div class="flex gap-4 items-center">
       {#if duplicates.length > 0 && !loading}
-        <Badge variant="secondary">
+        <Badge class="rounded-2xl" variant="secondary">
           {currentSlide + 1}/{duplicates.length} Potential Duplicates
         </Badge>
 
@@ -116,7 +123,7 @@
           <Tooltip.Root>
             <Tooltip.Trigger>
               {#snippet child({ props })}
-                <Badge {...props}>
+                <Badge class="rounded-2xl" {...props}>
                   <Info class="h-3.5 w-3.5 mr-1.5" />Distance: {duplicates[
                     currentSlide
                   ].distance}
@@ -127,6 +134,10 @@
             </Tooltip.Content>
           </Tooltip.Root>
         </Tooltip.Provider>
+      {:else if loading}
+        <Badge class="rounded-2xl">
+          {currentFiles}/{totalFiles}
+        </Badge>
       {/if}
     </div>
     <div class="flex items-center gap-4">
@@ -156,7 +167,7 @@
             type="single"
             bind:value={threshold}
             min={0}
-            max={30}
+            max={20}
             step={1}
           />
 
@@ -176,13 +187,11 @@
       </Button>
     </div>
   </div>
-  {#if loading && currentFiles != totalFiles}
-    <Progress value={currentFiles} max={totalFiles || 100} />
-  {/if}
+
   {#if duplicates.length > 0}
     <Carousel.Root
       setApi={(emblaApi) => (carouselAPI = emblaApi)}
-      class={`mx-auto w-11/12 ${loading && "opacity-50 pointer-events-none"}`}
+      class={`mx-auto w-11/12 ${loading && "opacity-20 pointer-events-none"}`}
     >
       <Carousel.Content>
         {#each duplicates as duplicate, i}
@@ -246,5 +255,14 @@
       <Carousel.Previous />
       <Carousel.Next />
     </Carousel.Root>
+  {/if}
+  {#if loading && currentFiles != totalFiles}
+    <div class="flex justify-center">
+      <Progress
+        class="fixed drop-shadow-xl w-11/12 h-3 top-1/2 -translate-y-1/2"
+        value={currentFiles}
+        max={totalFiles || 100}
+      />
+    </div>
   {/if}
 </main>
