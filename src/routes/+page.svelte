@@ -75,7 +75,9 @@
 
     try {
       await invoke("delete_file", { path: path });
-      duplicates.splice(index, 1);
+      duplicates = duplicates.filter((pair) => {
+        return pair.file_path1 !== path && pair.file_path2 !== path;
+      });
       if (duplicates.length === 0) {
         currentSlide = 0;
       } else if (currentSlide + 1 > duplicates.length) {

@@ -53,7 +53,8 @@
       <Dialog.Header class="select-none">
         <Dialog.Title>Are you sure?</Dialog.Title>
         <Dialog.Description>
-          The file <strong>{filepath}</strong> will be moved to the system's trash.
+          The file <strong class="break-all">{filepath}</strong> will be moved to
+          the system's trash.
         </Dialog.Description>
       </Dialog.Header>
       <Dialog.Footer class="select-none">
